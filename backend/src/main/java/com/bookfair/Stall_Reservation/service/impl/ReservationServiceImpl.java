@@ -123,11 +123,20 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setCancellationDeadline(eventDate.minusDays(cancelDays));
 
         reservation.setPaymentMethod(PaymentMethod.valueOf(request.getPaymentMethod())); // Enum validation handled by
-
-        // valueOf or earlier
         reservation.setAccountNumber(request.getAccountNumber());
         reservation.setBankName(request.getBankName());
         reservation.setAddress(request.getAddress());
+
+        // Validate and set OIDC/Security required assignment fields
+        if (request.getReservationDate() == null || request.getReservationDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Reservation date must be on or after the current date.");
+        }
+        reservation.setReservationDate(request.getReservationDate());
+        reservation.setStallType(request.getStallType());
+        reservation.setPreferredStallSize(request.getPreferredStallSize());
+        reservation.setStallsRequired(request.getStallsRequired());
+        reservation.setBusinessCategory(request.getBusinessCategory());
+        reservation.setSpecialRequirements(request.getSpecialRequirements());
 
         reservationRepository.save(reservation);
 
@@ -324,5 +333,10 @@ public class ReservationServiceImpl implements ReservationService {
     public boolean hasActiveReservation(Long vendorId, Long eventId) {
         return reservationRepository.existsByVendorIdAndEventIdAndStatusIn(
                 vendorId, eventId, List.of(ReservationStatus.PENDING, ReservationStatus.SUCCESS));
+    }
+
+    @Override
+    public Reservation getReservationById(Long id) {
+        return reservationRepository.findById(id).orElse(null);
     }
 }

@@ -8,6 +8,7 @@ import Payment from './pages/Payment';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
+import Callback from './pages/Callback';
 import Profile from './pages/Profile';
 import MyReservations from './pages/MyReservations';
 import ReservationDetail from './pages/ReservationDetail';
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="events/:id/book" element={<VendorRoute><Booking /></VendorRoute>} />
           <Route path="payment/:reservationId" element={<VendorRoute><Payment /></VendorRoute>} />
           <Route path="login" element={<Login />} />
+          <Route path="callback" element={<Callback />} />
           <Route path="register" element={<Register />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="about" element={<About />} />

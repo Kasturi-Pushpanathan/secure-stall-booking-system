@@ -37,5 +37,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleConflict(IllegalStateException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
     }
+
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGenericException(Exception e) {
+        // Log the stack trace internally for monitoring and debugging (Logging & Monitoring Failures mitigation)
+        logger.error("Unexpected error caught by GlobalExceptionHandler", e);
+        // Return a generic safe message to prevent stack trace exposure (Security Misconfiguration mitigation)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "An unexpected error occurred. Please contact the administrator."));
+    }
 }
 

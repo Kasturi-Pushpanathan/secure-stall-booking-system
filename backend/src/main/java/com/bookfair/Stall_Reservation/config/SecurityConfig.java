@@ -52,6 +52,7 @@ public class SecurityConfig {
 
                         // Admin-only
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/reservations/*/approve", "/api/reservations/*/reject", "/api/reservations/*/refund", "/api/reservations/*/reject-refund").hasAuthority("ROLE_ADMIN")
 
                         // Vendor/Admin
                         .requestMatchers("/api/profile/**", "/api/reservations/**")

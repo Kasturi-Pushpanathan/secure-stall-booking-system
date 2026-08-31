@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { reservationsApi } from '../api/client';
+import { reservationsApi, profileApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export default function Payment() {
@@ -10,12 +10,19 @@ export default function Payment() {
   const { user } = useAuth();
 
   const [bookingData, setBookingData] = useState(location.state || {});
+  const [profile, setProfile] = useState(null);
 
   const [formData, setFormData] = useState({
     paymentMethod: 'BANK_TRANSFER',
     accountNumber: '',
     bankName: '',
-    address: ''
+    address: '',
+    reservationDate: new Date().toISOString().split('T')[0],
+    stallType: 'Standard',
+    preferredStallSize: 'Medium',
+    stallsRequired: 1,
+    businessCategory: 'Food & Beverage',
+    specialRequirements: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,10 +30,12 @@ export default function Payment() {
 
   useEffect(() => {
     if (!bookingData.stallIds) {
-      // Optional: redirect if no booking data
-      // navigate('/booking');
+      // Allow redirect
     }
-  }, [bookingData, navigate]);
+    profileApi.get()
+      .then(setProfile)
+      .catch(console.error);
+  }, [bookingData]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -42,7 +51,7 @@ export default function Payment() {
         eventId: bookingData.eventId,
         stallIds: bookingData.stallIds,
         genreIds: bookingData.genreIds || [],
-        stallDescription: 'Standard Setup',
+        stallDescription: bookingData.stallDescription || 'Standard Setup',
         ...formData
       };
 
@@ -105,11 +114,13 @@ export default function Payment() {
         {/* Section B & C: Payment Form */}
         <div>
           <div className="bg-gray-800/80 p-6 rounded-xl shadow-lg border border-gray-700 mb-6">
-            <h2 className="text-2xl font-bold mb-4 text-blue-300">Vendor Details</h2>
+            <h2 className="text-2xl font-bold mb-4 text-blue-300">Vendor Profile Details</h2>
             <div className="space-y-2 text-gray-300 text-sm">
-              <p><span className="font-semibold text-gray-100">Name:</span> {user?.name}</p>
-              <p><span className="font-semibold text-gray-100">Email:</span> {user?.email}</p>
-              {/* <p><span className="font-semibold text-gray-100">Phone:</span> {user?.phone}</p> */}
+              <p><span className="font-semibold text-gray-100">Username (IDP):</span> {profile?.email || user?.email}</p>
+              <p><span className="font-semibold text-gray-100">Name:</span> {profile?.name || user?.name}</p>
+              <p><span className="font-semibold text-gray-100">Email Address:</span> {profile?.email || user?.email}</p>
+              <p><span className="font-semibold text-gray-100">Contact Number:</span> {profile?.phone || 'N/A'}</p>
+              <p><span className="font-semibold text-gray-100">Organization / Business:</span> {profile?.businessName || 'N/A'}</p>
             </div>
           </div>
 
@@ -117,7 +128,7 @@ export default function Payment() {
             onSubmit={handleSubmit}
             className="bg-gray-800/80 p-6 rounded-xl shadow-lg border border-gray-700"
           >
-            <h2 className="text-2xl font-bold mb-6 text-blue-300">Payment Details</h2>
+            <h2 className="text-2xl font-bold mb-6 text-blue-300">Stall Reservation & Payment</h2>
 
             {error && (
               <div className="p-3 mb-4 bg-red-900/80 text-red-300 rounded-lg border border-red-700">
@@ -126,6 +137,97 @@ export default function Payment() {
             )}
 
             <div className="space-y-4">
+              {/* OIDC Assignment Required Fields */}
+              <h3 className="text-lg font-semibold text-amber-300 border-b border-gray-700 pb-1 mt-2">Reservation Info</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Reservation Date</label>
+                <input
+                  type="date"
+                  name="reservationDate"
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  value={formData.reservationDate}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-amber-500 focus:border-amber-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Stall Type</label>
+                  <select
+                    name="stallType"
+                    value={formData.stallType}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-amber-500 focus:border-amber-500"
+                  >
+                    <option value="Standard">Standard Stall</option>
+                    <option value="Premium">Premium Stall</option>
+                    <option value="Corner Stall">Corner Stall</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Preferred Stall Size</label>
+                  <select
+                    name="preferredStallSize"
+                    value={formData.preferredStallSize}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-amber-500 focus:border-amber-500"
+                  >
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Number of Stalls Required</label>
+                  <input
+                    type="number"
+                    name="stallsRequired"
+                    required
+                    min="1"
+                    value={formData.stallsRequired}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-amber-500 focus:border-amber-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Business Category</label>
+                  <select
+                    name="businessCategory"
+                    value={formData.businessCategory}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-amber-500 focus:border-amber-500"
+                  >
+                    <option value="Food & Beverage">Food & Beverage</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Handicrafts">Handicrafts</option>
+                    <option value="Services">Services</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Special Requirements or Comments</label>
+                <textarea
+                  name="specialRequirements"
+                  rows="2"
+                  value={formData.specialRequirements}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="Enter any special requests..."
+                />
+              </div>
+
+              <h3 className="text-lg font-semibold text-amber-300 border-b border-gray-700 pb-1 mt-6">Payment Info</h3>
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Payment Method</label>
                 <select

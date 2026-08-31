@@ -56,6 +56,14 @@ public class Reservation {
     private String bankName;
     private String address;
 
+    // Security/OIDC assignment required fields
+    private LocalDate reservationDate;
+    private String stallType;
+    private String preferredStallSize;
+    private Integer stallsRequired;
+    private String businessCategory;
+    private String specialRequirements;
+
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReservationStall> stalls = new ArrayList<>();
 
@@ -238,5 +246,53 @@ public class Reservation {
 
     public void setAdminAck(boolean adminAck) {
         this.adminAck = adminAck;
+    }
+
+    public LocalDate getReservationDate() {
+        return reservationDate;
+    }
+
+    public void setReservationDate(LocalDate reservationDate) {
+        this.reservationDate = reservationDate;
+    }
+
+    public String getStallType() {
+        return stallType;
+    }
+
+    public void setStallType(String stallType) {
+        this.stallType = stallType;
+    }
+
+    public String getPreferredStallSize() {
+        return preferredStallSize;
+    }
+
+    public void setPreferredStallSize(String preferredStallSize) {
+        this.preferredStallSize = preferredStallSize;
+    }
+
+    public Integer getStallsRequired() {
+        return stallsRequired;
+    }
+
+    public void setStallsRequired(Integer stallsRequired) {
+        this.stallsRequired = stallsRequired;
+    }
+
+    public String getBusinessCategory() {
+        return businessCategory;
+    }
+
+    public void setBusinessCategory(String businessCategory) {
+        this.businessCategory = businessCategory;
+    }
+
+    public String getSpecialRequirements() {
+        return specialRequirements;
+    }
+
+    public void setSpecialRequirements(String specialRequirements) {
+        this.specialRequirements = specialRequirements;
     }
 }

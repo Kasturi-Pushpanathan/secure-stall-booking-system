@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { oidcService } from '../services/oidcService';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +24,9 @@ export function AuthProvider({ children }) {
     setToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    if (oidcService.isConfigured()) {
+      window.location.href = oidcService.getLogoutUrl();
+    }
   };
 
   const isAdmin = user?.role === 'ADMIN';

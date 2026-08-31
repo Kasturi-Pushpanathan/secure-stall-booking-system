@@ -31,4 +31,6 @@ public interface ReservationService {
     Reservation getByBookingId(String bookingId);
 
     boolean hasActiveReservation(Long vendorId, Long eventId);
+
+    Reservation getReservationById(Long id);
 }

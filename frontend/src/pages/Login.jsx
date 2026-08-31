@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../api/client';
+import { oidcService } from '../services/oidcService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,15 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleOidcLogin = async () => {
+    try {
+      const url = await oidcService.getLoginUrl();
+      window.location.href = url;
+    } catch (err) {
+      setError('Failed to initiate OIDC login');
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,6 +41,20 @@ export default function Login() {
     <div className="container mx-auto px-4 py-12 max-w-md">
       <div className="animate-fadeIn">
         <h1 className="font-display text-2xl font-bold mb-6">Login</h1>
+        {oidcService.isConfigured() && (
+          <div className="mb-6">
+            <button
+              onClick={handleOidcLogin}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2"
+            >
+              <span>🔑</span> Sign in with Cloud IDP (OIDC)
+            </button>
+            <div className="relative my-6 text-center">
+              <span className="bg-stone-50 px-2 text-stone-500 text-sm relative z-10">or sign in locally</span>
+              <div className="absolute top-1/2 left-0 right-0 border-t border-stone-200 z-0"></div>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-medium mb-1">Email</label>
